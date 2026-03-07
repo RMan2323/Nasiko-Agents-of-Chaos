@@ -6,34 +6,49 @@ import os
 import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Global database instance (singleton pattern)
+_db_instance = None
 
 
 def get_database():
     """
-    Get database instance.
+    Get database instance (singleton pattern for efficiency).
     
     Priority:
     1. MongoDB (if MONGODB_URI is set or MongoDB is available)
     2. File-based (fallback for development)
     """
+    global _db_instance
+    
+    # Return existing instance if available
+    if _db_instance is not None:
+        return _db_instance
+    
     # Try MongoDB first
     mongodb_uri = os.getenv("MONGODB_URI")
     use_mongodb = os.getenv("USE_MONGODB", "true").lower() == "true"
     
-    if use_mongodb or mongodb_uri:
+    if use_mongodb and mongodb_uri:
         try:
             from utils.mongodb_database import get_database as get_mongo_db
             db = get_mongo_db()
             if db.is_connected():
-                return db
+                _db_instance = db
+                logger.info("✅ Using MongoDB database")
+                return _db_instance
         except ImportError:
-            print("⚠️ MongoDB libraries not installed. Run: pip install pymongo")
+            logger.warning("⚠️ MongoDB libraries not installed. Run: pip install pymongo")
         except Exception as e:
-            print(f"⚠️ MongoDB connection failed: {e}")
+            logger.warning(f"⚠️ MongoDB connection failed: {e}")
     
     # Fallback to file-based database
-    print("ℹ️ Using file-based database (development mode)")
-    return CandidateDatabase()
+    logger.info("ℹ️ Using file-based database (development mode)")
+    _db_instance = CandidateDatabase()
+    return _db_instance
 
 
 class CandidateDatabase:
@@ -171,8 +186,5 @@ class CandidateDatabase:
 _db = None
 
 def get_database_instance():
-    """Get or create database instance (legacy function)."""
-    global _db
-    if _db is None:
-        _db = get_database()
-    return _db
+    """Get or create database instance (legacy function - use get_database() instead)."""
+    return get_database()

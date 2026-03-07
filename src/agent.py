@@ -2,6 +2,7 @@
 Core HR agent logic with modular architecture.
 """
 from typing import List, Dict, Any
+import logging
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -37,10 +38,16 @@ from modules.researcher import Researcher
 from modules.interview_coach import InterviewCoach
 from modules.culture_analyzer import CultureAnalyzer
 
+logger = logging.getLogger(__name__)
+
 
 class Agent:
+    """HR Agent with modular architecture and LangChain integration."""
+    
     def __init__(self):
         self.name = "HR Agent - Agents of Chaos"
+        
+        logger.info("Initializing HR Agent...")
 
         # Initialize modular architecture
         self.planner = TaskPlanner()
@@ -49,35 +56,74 @@ class Agent:
         self.aggregator = ResultAggregator()
 
         # Register specialized modules
-        self.router.register_module(CalendarManager())
-        self.router.register_module(Recruiter())
-        self.router.register_module(Researcher())
-        self.router.register_module(InterviewCoach())
-        self.router.register_module(CultureAnalyzer())
+        self._register_modules()
 
         # Set modular components for tools
         set_modular_components(self.planner, self.executor, self.aggregator)
 
-        # Define tools
-        self.tools = [
+        # Define tools (organized for clarity)
+        self.tools = self._get_tools()
+
+        # Initialize LLM with optimized settings
+        self.llm = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0.2,
+            max_retries=2,
+            request_timeout=30
+        )
+
+        # Create agent with prompt
+        prompt = self._create_prompt()
+        agent = create_tool_calling_agent(self.llm, self.tools, prompt)
+
+        # Create agent executor with optimized settings
+        self.agent_executor = AgentExecutor(
+            agent=agent,
+            tools=self.tools,
+            verbose=True,
+            max_iterations=10,
+            handle_parsing_errors=True
+        )
+        
+        logger.info("✅ HR Agent initialized successfully")
+    
+    def _register_modules(self):
+        """Register all specialized modules."""
+        modules = [
+            CalendarManager(),
+            Recruiter(),
+            Researcher(),
+            InterviewCoach(),
+            CultureAnalyzer()
+        ]
+        
+        for module in modules:
+            self.router.register_module(module)
+            logger.info(f"Registered module: {module.__class__.__name__}")
+    
+    def _get_tools(self) -> List:
+        """Get all available tools organized by category."""
+        return [
+            # Database tools
             add_candidate_to_database,
             get_candidate_from_database,
             search_candidates_by_name,
             search_candidates_by_skills,
             search_candidates_advanced,
+            # HR workflow tools
             schedule_interview,
             screen_candidate,
             research_candidate,
             get_interview_prep,
             analyze_culture_fit,
             research_salary,
+            # General assistant
             hr_assistant
         ]
-
-        # Initialize LLM
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
-
-        prompt = ChatPromptTemplate.from_messages([
+    
+    def _create_prompt(self) -> ChatPromptTemplate:
+        """Create the system prompt for the agent."""
+        return ChatPromptTemplate.from_messages([
             ("system",
              """You are an expert HR assistant built by team "Agents of Chaos" for Buildathon 2026.
 
@@ -112,6 +158,7 @@ DATABASE USAGE:
 - When asked for candidates with SKILLS (e.g., "who knows Python"), use search_candidates_by_skills
 - When asked by email, use get_candidate_from_database
 - For complex queries (college, CPI, experience), use search_candidates_advanced
+- When asked to RESEARCH a candidate, ALWAYS use research_candidate tool directly - never ask for clarification
 - When screening a candidate by email, screen_candidate will auto-retrieve from database
 
 GUIDELINES:
@@ -127,17 +174,19 @@ Always aim to provide comprehensive, practical assistance."""),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
 
-        agent = create_tool_calling_agent(self.llm, self.tools, prompt)
-
-        self.agent_executor = AgentExecutor(
-            agent=agent,
-            tools=self.tools,
-            verbose=True
-        )
-
     def process_message(self, message_text: str) -> str:
         """
         Process the incoming message using LangChain.
+        
+        Args:
+            message_text: User's input message
+            
+        Returns:
+            Agent's response text
         """
-        result = self.agent_executor.invoke({"input": message_text})
-        return result["output"]
+        try:
+            result = self.agent_executor.invoke({"input": message_text})
+            return result["output"]
+        except Exception as e:
+            logger.error(f"Error processing message: {e}", exc_info=True)
+            return f"I apologize, but I encountered an error processing your request: {str(e)}. Please try again or rephrase your question."

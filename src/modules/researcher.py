@@ -4,6 +4,10 @@ Researcher module for gathering information about candidates and companies.
 from typing import Dict, Any, List
 from core.base_module import BaseModule
 from langchain_openai import ChatOpenAI
+from utils.database import get_database
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Researcher(BaseModule):
@@ -12,6 +16,7 @@ class Researcher(BaseModule):
     def __init__(self):
         super().__init__("researcher")
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
+        self.db = get_database()
     
     def can_handle(self, task: Dict[str, Any]) -> bool:
         """Check if this module can handle the task."""
@@ -38,31 +43,138 @@ class Researcher(BaseModule):
             return self._general_research(params, description)
     
     def _research_candidate(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Research candidate background."""
+        """Research candidate background using actual database data."""
         candidate_name = params.get("candidate_name", "Candidate")
         focus_areas = params.get("focus_areas", ["professional background", "skills", "achievements"])
         
-        prompt = f"""You are an HR researcher. Provide a professional background summary for a candidate named {candidate_name}.
-
-Focus on: {', '.join(focus_areas)}
-
-Since this is a simulation, create a realistic professional profile including:
-1. Career trajectory
-2. Key skills and expertise
-3. Notable achievements
-4. Education background
-5. Professional reputation indicators
-
-Keep it professional and realistic."""
-
-        response = self.llm.invoke(prompt)
+        # Try to find candidate in database
+        candidate_data = None
+        
+        # Search by name in database
+        try:
+            query = {"name": {"$regex": candidate_name, "$options": "i"}}
+            candidates = self.db.search_candidates(query)
+            if candidates:
+                candidate_data = candidates[0]  # Take first match
+                logger.info(f"Found candidate data for {candidate_name} in database")
+        except Exception as e:
+            logger.warning(f"Could not search database for candidate: {e}")
+        
+        # If we have real data, use it
+        if candidate_data:
+            return self._research_from_database(candidate_data, focus_areas)
+        else:
+            # No data found - return minimal response
+            return {
+                "success": False,
+                "candidate": candidate_name,
+                "research_summary": f"No detailed information found for {candidate_name} in our database. Please add the candidate to the system first or provide more details.",
+                "message": f"No data available for {candidate_name}"
+            }
+    
+    def _research_from_database(self, candidate_data: Dict[str, Any], focus_areas: List[str]) -> Dict[str, Any]:
+        """Create research summary from actual database data."""
+        name = candidate_data.get('name', 'Unknown')
+        email = candidate_data.get('email', 'N/A')
+        
+        # Build research summary from real data
+        summary_parts = []
+        
+        # Professional Background
+        summary_parts.append(f"### Professional Background for {name}")
+        summary_parts.append(f"**Email**: {email}")
+        
+        # Education
+        college = candidate_data.get('college', '')
+        degree = candidate_data.get('degree', '')
+        cpi = candidate_data.get('cpi', 0)
+        if college:
+            summary_parts.append(f"\n**Education**:")
+            summary_parts.append(f"- College: {college}")
+            if degree:
+                summary_parts.append(f"- Degree: {degree}")
+            if cpi > 0:
+                summary_parts.append(f"- CPI/GPA: {cpi}")
+        
+        # Experience
+        experience_years = candidate_data.get('experience_years', 0)
+        current_company = candidate_data.get('current_company', '')
+        current_position = candidate_data.get('current_position', '')
+        if experience_years > 0:
+            summary_parts.append(f"\n**Experience**: {experience_years} years")
+            if current_company:
+                summary_parts.append(f"- Current Company: {current_company}")
+            if current_position:
+                summary_parts.append(f"- Current Position: {current_position}")
+        
+        # Skills
+        skills = candidate_data.get('skills', [])
+        if skills:
+            summary_parts.append(f"\n**Key Skills**:")
+            for skill in skills:
+                summary_parts.append(f"- {skill}")
+        
+        # Professional Links (only if they exist)
+        available_links = []
+        linkedin_url = candidate_data.get('linkedin_url', '')
+        github_url = candidate_data.get('github_url', '')
+        portfolio_url = candidate_data.get('portfolio_url', '')
+        
+        if linkedin_url:
+            available_links.append(f"- LinkedIn: {linkedin_url}")
+        if github_url:
+            available_links.append(f"- GitHub: {github_url}")
+        if portfolio_url:
+            available_links.append(f"- Portfolio: {portfolio_url}")
+        
+        if available_links:
+            summary_parts.append(f"\n**Professional Links**:")
+            summary_parts.extend(available_links)
+        
+        # Screening Results (if available)
+        screening_score = candidate_data.get('screening_score')
+        culture_fit_score = candidate_data.get('culture_fit_score')
+        technical_score = candidate_data.get('technical_score')
+        
+        if screening_score or culture_fit_score or technical_score:
+            summary_parts.append(f"\n**Assessment Scores**:")
+            if screening_score:
+                summary_parts.append(f"- Screening Score: {screening_score}/100")
+            if culture_fit_score:
+                summary_parts.append(f"- Culture Fit Score: {culture_fit_score}/100")
+            if technical_score:
+                summary_parts.append(f"- Technical Score: {technical_score}/100")
+        
+        # Status
+        status = candidate_data.get('status', 'unknown')
+        summary_parts.append(f"\n**Current Status**: {status.title()}")
+        
+        # Notes (if any)
+        notes = candidate_data.get('notes', '')
+        if notes:
+            summary_parts.append(f"\n**Additional Notes**: {notes}")
+        
+        research_summary = "\n".join(summary_parts)
+        
+        # Determine available sources based on what data exists
+        sources = ["Internal Database"]
+        if linkedin_url:
+            sources.append("LinkedIn Profile Available")
+        if github_url:
+            sources.append("GitHub Profile Available")
+        if portfolio_url:
+            sources.append("Portfolio Available")
         
         return {
             "success": True,
-            "candidate": candidate_name,
-            "research_summary": response.content,
-            "sources": ["LinkedIn", "Professional Networks", "Public Records"],
-            "message": f"Completed background research on {candidate_name}"
+            "candidate": name,
+            "email": email,
+            "research_summary": research_summary,
+            "sources": sources,
+            "has_linkedin": bool(linkedin_url),
+            "has_github": bool(github_url),
+            "has_portfolio": bool(portfolio_url),
+            "message": f"Completed background research on {name} using database records"
         }
     
     def _research_company(self, params: Dict[str, Any]) -> Dict[str, Any]:

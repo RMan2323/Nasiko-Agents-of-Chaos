@@ -7,23 +7,53 @@ from typing import List, Optional, Any, Dict, Union, Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from agent import Agent
 from models import JsonRpcRequest, JsonRpcResponse, Message, Task, TaskStatus, Artifact, ArtifactPart
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("agent-template")
+# Setup logging with better formatting
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("hr-agent")
 
-app = FastAPI()
+app = FastAPI(
+    title="HR Agent API",
+    description="AI-powered HR assistant with modular architecture",
+    version="1.0.0"
+)
 
-# Initialize the agent
-agent = Agent()
+# Add CORS middleware for web clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize the agent (singleton pattern)
+agent = None
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize agent on startup."""
+    global agent
+    logger.info("Starting HR Agent service...")
+    agent = Agent()
+    logger.info("✅ HR Agent service ready")
 
 @app.get("/")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "ok", "service": "HR Agent", "version": "1.0.0"}
+    return {
+        "status": "ok",
+        "service": "HR Agent - Agents of Chaos",
+        "version": "1.0.0",
+        "agent_ready": agent is not None
+    }
 
 @app.get("/health")
 async def health():
@@ -33,6 +63,16 @@ async def health():
 @app.post("/")
 async def handle_rpc(request: Request):
     """Handle JSON-RPC requests."""
+    
+    if agent is None:
+        return {
+            "jsonrpc": "2.0",
+            "id": "error",
+            "error": {
+                "code": -32603,
+                "message": "Agent not initialized"
+            }
+        }
     
     try:
         # Parse JSON body
@@ -53,7 +93,7 @@ async def handle_rpc(request: Request):
                     if part.kind == "text" and part.text:
                         input_text += part.text
                 
-                logger.info(f"Received message: {input_text[:50]}... (Session: {session_id})")
+                logger.info(f"Received message: {input_text[:100]}... (Session: {session_id})")
                 
                 # 2. Invoke Agent Logic
                 response_text = agent.process_message(input_text)
@@ -81,7 +121,7 @@ async def handle_rpc(request: Request):
                     result=task
                 )
                 
-                return response.dict()
+                return response.model_dump()
                 
             except Exception as e:
                 logger.error(f"Error processing message: {e}", exc_info=True)
@@ -118,12 +158,12 @@ async def handle_rpc(request: Request):
         }
 
 if __name__ == "__main__":
-    import click
-
     @click.command()
-    @click.option('--host', 'host', default='0.0.0.0')
-    @click.option('--port', 'port', default=5000)
+    @click.option('--host', 'host', default='0.0.0.0', help='Host to bind to')
+    @click.option('--port', 'port', default=5000, help='Port to bind to')
     def main(host: str, port: int):
-        uvicorn.run(app, host=host, port=port)
+        """Start the HR Agent server."""
+        logger.info(f"Starting server on {host}:{port}")
+        uvicorn.run(app, host=host, port=port, log_level="info")
 
     main()

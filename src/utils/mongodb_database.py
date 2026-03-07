@@ -46,7 +46,14 @@ class MongoDBDatabase:
     def _connect(self):
         """Connect to MongoDB and initialize collections."""
         try:
-            self.client = MongoClient(self.uri, serverSelectionTimeoutMS=5000)
+            self.client = MongoClient(
+                self.uri,
+                serverSelectionTimeoutMS=30000,  # 30 seconds
+                connectTimeoutMS=30000,
+                socketTimeoutMS=30000,
+                retryWrites=True,
+                w='majority'
+            )
             
             # Test connection
             self.client.admin.command('ping')
@@ -181,10 +188,10 @@ class MongoDBDatabase:
     
     def get_candidate(self, email: str) -> Optional[Dict[str, Any]]:
         """
-        Get candidate by email.
+        Get candidate by name or email.
         
         Args:
-            email: Candidate email address
+            email: Candidate email address or name
         
         Returns:
             Candidate document or None

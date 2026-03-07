@@ -9,6 +9,11 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 
 # Import tools
 from tools import (
+    add_candidate_to_database,
+    get_candidate_from_database,
+    search_candidates_by_name,
+    search_candidates_by_skills,
+    search_candidates_advanced,
     schedule_interview,
     screen_candidate,
     research_candidate,
@@ -55,6 +60,11 @@ class Agent:
 
         # Define tools
         self.tools = [
+            add_candidate_to_database,
+            get_candidate_from_database,
+            search_candidates_by_name,
+            search_candidates_by_skills,
+            search_candidates_advanced,
             schedule_interview,
             screen_candidate,
             research_candidate,
@@ -83,13 +93,26 @@ UNIQUE FEATURES:
 - Culture Fit Analyzer: Deep analysis of candidate-company compatibility
 
 Available tools:
+- add_candidate_to_database: Add new candidates directly to MongoDB database
+- get_candidate_from_database: Retrieve candidate info from MongoDB by email
+- search_candidates_by_name: Search candidates by name (partial match, e.g., "Bob")
+- search_candidates_by_skills: Find all candidates with specific skills (e.g., "Python, AWS")
+- search_candidates_advanced: Advanced search by college, CPI, experience, status
 - schedule_interview: Schedule interviews with candidates
-- screen_candidate: Evaluate and screen candidates
+- screen_candidate: Evaluate and screen candidates (auto-retrieves from database)
 - research_candidate: Research candidate backgrounds
 - get_interview_prep: Generate interview questions and prep materials
 - analyze_culture_fit: Assess culture compatibility
 - research_salary: Get salary data and compensation info
 - hr_assistant: Handle complex multi-step HR tasks
+
+DATABASE USAGE:
+- When asked to add a candidate, use add_candidate_to_database directly
+- When asked about a candidate by NAME (e.g., "tell me about Bob"), use search_candidates_by_name
+- When asked for candidates with SKILLS (e.g., "who knows Python"), use search_candidates_by_skills
+- When asked by email, use get_candidate_from_database
+- For complex queries (college, CPI, experience), use search_candidates_advanced
+- When screening a candidate by email, screen_candidate will auto-retrieve from database
 
 GUIDELINES:
 - Be professional, helpful, and efficient

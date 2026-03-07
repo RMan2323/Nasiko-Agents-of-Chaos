@@ -37,14 +37,27 @@ class CalendarManager(BaseModule):
         candidate_name = params.get("candidate_name", "Candidate")
         candidate_email = params.get("candidate_email", "")
         
-        # Find available slot
-        start_time = self.calendar_api.find_available_slot(duration)
+        # NEW: Extract and parse the requested date_time if provided
+        date_time_str = params.get("date_time", "")
+        start_time = None
+        
+        if date_time_str:
+            try:
+                # Parse the ISO format string sent by the AI
+                clean_date_str = date_time_str.replace('Z', '')
+                start_time = datetime.fromisoformat(clean_date_str)
+            except ValueError:
+                print(f"⚠️ Could not parse requested time: {date_time_str}")
+        
+        # Fallback to finding an available slot if no valid time was requested
+        if not start_time:
+            start_time = self.calendar_api.find_available_slot(duration)
         
         # Create event title
         event_title = f"{meeting_type.title()} Interview - {candidate_name}"
         
         # Attendees list
-        attendees = []
+        attendees =[]
         if candidate_email:
             attendees.append(candidate_email)
         

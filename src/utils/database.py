@@ -6,7 +6,7 @@ import os
 import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime
-
+import json
 
 def get_database():
     """
@@ -32,7 +32,7 @@ def get_database():
             print(f"⚠️ MongoDB connection failed: {e}")
     
     # Fallback to file-based database
-    print("ℹ️ Using file-based database (development mode)")
+    print("Using file-based database (development mode)")
     return CandidateDatabase()
 
 

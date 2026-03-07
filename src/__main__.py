@@ -81,7 +81,7 @@ async def handle_rpc(request: Request):
                     result=task
                 )
                 
-                return response.dict()
+                return response.model_dump()
                 
             except Exception as e:
                 logger.error(f"Error processing message: {e}", exc_info=True)

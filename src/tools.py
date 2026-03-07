@@ -270,7 +270,7 @@ def search_candidates_advanced(
 
 
 @tool
-def schedule_interview(candidate_name: str, interview_type: str = "technical", duration: int = 60, candidate_email: str = "") -> str:
+def schedule_interview(candidate_name: str, date_time: str = "", interview_type: str = "technical", duration: int = 60, candidate_email: str = "") -> str:
     """
     Schedule an interview with a candidate.
     

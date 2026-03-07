@@ -41,7 +41,7 @@ class GoogleCalendarAPI:
             SCOPES = ['https://www.googleapis.com/auth/calendar']
             
             creds = None
-            token_path = '/token.json'
+            token_path = 'token.json'
             
             # Load existing token
             if os.path.exists(token_path):
@@ -106,11 +106,11 @@ class GoogleCalendarAPI:
                 'description': description,
                 'start': {
                     'dateTime': start_time.isoformat(),
-                    'timeZone': 'UTC',
+                    'timeZone': 'Asia/Kolkata',
                 },
                 'end': {
                     'dateTime': end_time.isoformat(),
-                    'timeZone': 'UTC',
+                    'timeZone': 'Asia/Kolkata',
                 },
                 'attendees': [{'email': email} for email in attendees],
                 'conferenceData': {

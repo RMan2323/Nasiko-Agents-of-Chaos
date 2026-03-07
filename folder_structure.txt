@@ -1,0 +1,372 @@
+
+============================================================
+FILE: src\agent.py
+
+  Classes:
+    class Agent
+       -> __init__(self)
+       -> process_message(self, message_text)
+
+  Functions:
+    __init__(self)
+    process_message(self, message_text)
+
+============================================================
+FILE: src\models.py
+
+  Classes:
+    class MessagePart
+    class Message
+    class JsonRpcParams
+    class JsonRpcRequest
+    class ArtifactPart
+    class Artifact
+    class TaskStatus
+    class Task
+    class JsonRpcResponse
+
+============================================================
+FILE: src\tools.py
+
+  Functions:
+    set_modular_components(planner, executor, aggregator)
+    add_candidate_to_database(name, email, college, cpi, skills, experience_years, phone, degree)
+    get_candidate_from_database(email)
+    search_candidates_by_name(name)
+    search_candidates_by_skills(skills)
+    search_candidates_advanced(college, min_cpi, min_experience, status)
+    schedule_interview(candidate_name, interview_type, duration, candidate_email)
+    screen_candidate(candidate_email, job_role, resume_summary)
+    research_candidate(candidate_name, focus_areas)
+    get_interview_prep(job_role, interview_type, difficulty)
+    analyze_culture_fit(candidate_name, company_name, candidate_email)
+    research_salary(job_role, location, experience_level)
+    hr_assistant(query)
+
+============================================================
+FILE: src\__init__.py
+
+============================================================
+FILE: src\__main__.py
+
+  Functions:
+    main(host, port)
+
+============================================================
+FILE: src\core\aggregator.py
+
+  Classes:
+    class ResultAggregator
+       -> __init__(self)
+       -> combine(self, results)
+
+  Functions:
+    __init__(self)
+    combine(self, results)
+
+============================================================
+FILE: src\core\base_module.py
+
+  Classes:
+    class BaseModule
+       -> __init__(self, name)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self, name)
+    can_handle(self, task)
+    execute(self, task)
+    get_capabilities(self)
+
+============================================================
+FILE: src\core\executor.py
+
+  Classes:
+    class Executor
+       -> __init__(self, router)
+       -> execute(self, tasks)
+
+  Functions:
+    __init__(self, router)
+    execute(self, tasks)
+
+============================================================
+FILE: src\core\planner.py
+
+  Classes:
+    class TaskPlanner
+       -> __init__(self)
+       -> plan(self, query)
+
+  Functions:
+    __init__(self)
+    plan(self, query)
+
+============================================================
+FILE: src\core\router.py
+
+  Classes:
+    class TaskRouter
+       -> __init__(self)
+       -> register_module(self, module)
+       -> route(self, task)
+       -> get_all_capabilities(self)
+
+  Functions:
+    __init__(self)
+    register_module(self, module)
+    route(self, task)
+    get_all_capabilities(self)
+
+============================================================
+FILE: src\modules\calendar_manager.py
+
+  Classes:
+    class CalendarManager
+       -> __init__(self)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self)
+    can_handle(self, task)
+    execute(self, task)
+    get_capabilities(self)
+
+============================================================
+FILE: src\modules\culture_analyzer.py
+
+  Classes:
+    class CultureAnalyzer
+       -> __init__(self)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> _assess_culture_fit(self, params)
+       -> _create_culture_profile(self, params)
+       -> _analyze_team_dynamics(self, params)
+       -> _comprehensive_culture_analysis(self, params)
+       -> _calculate_fit_score(self, candidate_values, company_values)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self)
+    can_handle(self, task)
+    execute(self, task)
+    _assess_culture_fit(self, params)
+    _create_culture_profile(self, params)
+    _analyze_team_dynamics(self, params)
+    _comprehensive_culture_analysis(self, params)
+    _calculate_fit_score(self, candidate_values, company_values)
+    get_capabilities(self)
+
+============================================================
+FILE: src\modules\interview_coach.py
+
+  Classes:
+    class InterviewCoach
+       -> __init__(self)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> _generate_interview_questions(self, params)
+       -> _provide_interview_feedback(self, params)
+       -> _provide_interview_tips(self, params)
+       -> _comprehensive_interview_prep(self, params)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self)
+    can_handle(self, task)
+    execute(self, task)
+    _generate_interview_questions(self, params)
+    _provide_interview_feedback(self, params)
+    _provide_interview_tips(self, params)
+    _comprehensive_interview_prep(self, params)
+    get_capabilities(self)
+
+============================================================
+FILE: src\modules\recruiter.py
+
+  Classes:
+    class Recruiter
+       -> __init__(self)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> _add_candidate(self, params)
+       -> _screen_candidate(self, params)
+       -> _shortlist_candidates(self, params)
+       -> _track_candidate_status(self, params)
+       -> _general_recruitment_advice(self, params, description)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self)
+    can_handle(self, task)
+    execute(self, task)
+    _add_candidate(self, params)
+    _screen_candidate(self, params)
+    _shortlist_candidates(self, params)
+    _track_candidate_status(self, params)
+    _general_recruitment_advice(self, params, description)
+    get_capabilities(self)
+
+============================================================
+FILE: src\modules\researcher.py
+
+  Classes:
+    class Researcher
+       -> __init__(self)
+       -> can_handle(self, task)
+       -> execute(self, task)
+       -> _research_candidate(self, params)
+       -> _research_company(self, params)
+       -> _research_salary(self, params)
+       -> _research_market_trends(self, params)
+       -> _general_research(self, params, description)
+       -> get_capabilities(self)
+
+  Functions:
+    __init__(self)
+    can_handle(self, task)
+    execute(self, task)
+    _research_candidate(self, params)
+    _research_company(self, params)
+    _research_salary(self, params)
+    _research_market_trends(self, params)
+    _general_research(self, params, description)
+    get_capabilities(self)
+
+============================================================
+FILE: src\utils\config.py
+
+============================================================
+FILE: src\utils\database.py
+
+  Classes:
+    class CandidateDatabase
+       -> __init__(self, db_path)
+       -> is_connected(self)
+       -> _ensure_db_exists(self)
+       -> _load_db(self)
+       -> _save_db(self, data)
+       -> add_candidate(self, candidate_data)
+       -> get_candidate(self, candidate_id)
+       -> search_candidates(self, query)
+       -> update_candidate(self, candidate_id, updates)
+       -> add_interview(self, candidate_id, interview_data)
+       -> get_all_candidates(self)
+
+  Functions:
+    get_database()
+    get_database_instance()
+    __init__(self, db_path)
+    is_connected(self)
+    _ensure_db_exists(self)
+    _load_db(self)
+    _save_db(self, data)
+    add_candidate(self, candidate_data)
+    get_candidate(self, candidate_id)
+    search_candidates(self, query)
+    update_candidate(self, candidate_id, updates)
+    add_interview(self, candidate_id, interview_data)
+    get_all_candidates(self)
+
+============================================================
+FILE: src\utils\gmail.py
+
+  Classes:
+    class GmailAPI
+       -> __init__(self)
+       -> _initialize_service(self)
+       -> is_available(self)
+       -> send_email(self, to, subject, body, cc, html)
+       -> _mock_send_email(self, to, subject, body)
+       -> send_interview_invitation(self, candidate_email, candidate_name, interview_type, interview_date, interview_time, duration, meeting_link, interviewer_name)
+       -> send_screening_update(self, candidate_email, candidate_name, status, next_steps)
+       -> send_offer_letter(self, candidate_email, candidate_name, position, salary, start_date)
+
+  Functions:
+    get_gmail()
+    __init__(self)
+    _initialize_service(self)
+    is_available(self)
+    send_email(self, to, subject, body, cc, html)
+    _mock_send_email(self, to, subject, body)
+    send_interview_invitation(self, candidate_email, candidate_name, interview_type, interview_date, interview_time, duration, meeting_link, interviewer_name)
+    send_screening_update(self, candidate_email, candidate_name, status, next_steps)
+    send_offer_letter(self, candidate_email, candidate_name, position, salary, start_date)
+
+============================================================
+FILE: src\utils\google_calendar.py
+
+  Classes:
+    class GoogleCalendarAPI
+       -> __init__(self)
+       -> _initialize_service(self)
+       -> is_available(self)
+       -> create_event(self, summary, start_time, duration_minutes, attendees, description, location)
+       -> _create_mock_event(self, summary, start_time, duration_minutes, attendees)
+       -> find_available_slot(self, duration_minutes, days_ahead)
+       -> get_event(self, event_id)
+       -> cancel_event(self, event_id)
+
+  Functions:
+    get_calendar()
+    __init__(self)
+    _initialize_service(self)
+    is_available(self)
+    create_event(self, summary, start_time, duration_minutes, attendees, description, location)
+    _create_mock_event(self, summary, start_time, duration_minutes, attendees)
+    find_available_slot(self, duration_minutes, days_ahead)
+    get_event(self, event_id)
+    cancel_event(self, event_id)
+
+============================================================
+FILE: src\utils\logger.py
+
+============================================================
+FILE: src\utils\mongodb_database.py
+
+  Classes:
+    class MongoDBDatabase
+       -> __init__(self, uri, database_name)
+       -> _connect(self)
+       -> _create_indexes(self)
+       -> is_connected(self)
+       -> add_candidate(self, candidate_data)
+       -> get_candidate(self, email)
+       -> update_candidate(self, email, updates)
+       -> search_candidates(self, query)
+       -> get_all_candidates(self, limit, skip, sort_by, sort_order)
+       -> delete_candidate(self, email)
+       -> add_interview(self, candidate_email, interview_data)
+       -> get_interviews(self, candidate_email, status)
+       -> update_interview(self, interview_id, updates)
+       -> add_job(self, job_data)
+       -> get_jobs(self, status)
+       -> get_pipeline_stats(self)
+       -> get_average_scores(self)
+       -> close(self)
+
+  Functions:
+    get_database()
+    __init__(self, uri, database_name)
+    _connect(self)
+    _create_indexes(self)
+    is_connected(self)
+    add_candidate(self, candidate_data)
+    get_candidate(self, email)
+    update_candidate(self, email, updates)
+    search_candidates(self, query)
+    get_all_candidates(self, limit, skip, sort_by, sort_order)
+    delete_candidate(self, email)
+    add_interview(self, candidate_email, interview_data)
+    get_interviews(self, candidate_email, status)
+    update_interview(self, interview_id, updates)
+    add_job(self, job_data)
+    get_jobs(self, status)
+    get_pipeline_stats(self)
+    get_average_scores(self)
+    close(self)

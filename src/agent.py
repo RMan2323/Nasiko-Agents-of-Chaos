@@ -1,5 +1,5 @@
 """
-Core agent logic.
+Core HR agent logic with modular architecture.
 """
 from typing import List, Dict, Any
 
@@ -7,13 +7,40 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 
-# Existing tools
-from tools import example_tool, modular_agent
+# Import tools
+from tools import (
+    add_candidate_to_database,
+    get_candidate_from_database,
+    search_candidates_by_name,
+    search_candidates_by_skills,
+    search_candidates_advanced,
+    schedule_interview,
+    screen_candidate,
+    research_candidate,
+    get_interview_prep,
+    analyze_culture_fit,
+    research_salary,
+    hr_assistant,
+    set_modular_components
+)
+
+# Import modular architecture
+from core.planner import TaskPlanner
+from core.router import TaskRouter
+from core.executor import Executor
+from core.aggregator import ResultAggregator
+
+# Import specialized modules
+from modules.calendar_manager import CalendarManager
+from modules.recruiter import Recruiter
+from modules.researcher import Researcher
+from modules.interview_coach import InterviewCoach
+from modules.culture_analyzer import CultureAnalyzer
+
 
 class Agent:
     def __init__(self):
-
-        self.name = "FastAPI Agent"
+        self.name = "HR Agent - Agents of Chaos"
 
         # Initialize modular architecture
         self.planner = TaskPlanner()
@@ -21,27 +48,81 @@ class Agent:
         self.executor = Executor(self.router)
         self.aggregator = ResultAggregator()
 
-        # Register modular system as a tool
-        
+        # Register specialized modules
+        self.router.register_module(CalendarManager())
+        self.router.register_module(Recruiter())
+        self.router.register_module(Researcher())
+        self.router.register_module(InterviewCoach())
+        self.router.register_module(CultureAnalyzer())
+
+        # Set modular components for tools
+        set_modular_components(self.planner, self.executor, self.aggregator)
 
         # Define tools
-        self.tools = [example_tool, modular_agent]
+        self.tools = [
+            add_candidate_to_database,
+            get_candidate_from_database,
+            search_candidates_by_name,
+            search_candidates_by_skills,
+            search_candidates_advanced,
+            schedule_interview,
+            screen_candidate,
+            research_candidate,
+            get_interview_prep,
+            analyze_culture_fit,
+            research_salary,
+            hr_assistant
+        ]
 
         # Initialize LLM
-        self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        self.llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
 
         prompt = ChatPromptTemplate.from_messages([
             ("system",
-             """You are a helpful assistant.
+             """You are an expert HR assistant built by team "Agents of Chaos" for Buildathon 2026.
 
-You can solve tasks yourself or use tools.
+Your role is to help with:
+1. SCHEDULING: Schedule interviews and meetings
+2. RECRUITING: Screen candidates, evaluate resumes, manage hiring pipeline
+3. RESEARCH: Research candidates, companies, salaries, and market trends
+4. INTERVIEW PREP: Generate interview questions, provide coaching and feedback
+5. CULTURE FIT: Analyze candidate-company alignment and team dynamics
+
+UNIQUE FEATURES:
+- AI Interview Coach: Comprehensive interview preparation and feedback
+- Culture Fit Analyzer: Deep analysis of candidate-company compatibility
 
 Available tools:
-- example_tool
-- modular_agent (for complex multi-step tasks)
+- add_candidate_to_database: Add new candidates directly to MongoDB database
+- get_candidate_from_database: Retrieve candidate info from MongoDB by email
+- search_candidates_by_name: Search candidates by name (partial match, e.g., "Bob")
+- search_candidates_by_skills: Find all candidates with specific skills (e.g., "Python, AWS")
+- search_candidates_advanced: Advanced search by college, CPI, experience, status
+- schedule_interview: Schedule interviews with candidates
+- screen_candidate: Evaluate and screen candidates (auto-retrieves from database)
+- research_candidate: Research candidate backgrounds
+- get_interview_prep: Generate interview questions and prep materials
+- analyze_culture_fit: Assess culture compatibility
+- research_salary: Get salary data and compensation info
+- hr_assistant: Handle complex multi-step HR tasks
 
-Use modular_agent when a task requires planning and multiple steps.
-"""),
+DATABASE USAGE:
+- When asked to add a candidate, use add_candidate_to_database directly
+- When asked about a candidate by NAME (e.g., "tell me about Bob"), use search_candidates_by_name
+- When asked for candidates with SKILLS (e.g., "who knows Python"), use search_candidates_by_skills
+- When asked by email, use get_candidate_from_database
+- For complex queries (college, CPI, experience), use search_candidates_advanced
+- When screening a candidate by email, screen_candidate will auto-retrieve from database
+
+GUIDELINES:
+- Be professional, helpful, and efficient
+- Use specific tools for focused tasks
+- Use hr_assistant for complex multi-step requests
+- Provide actionable insights and recommendations
+- Be encouraging and supportive in interview coaching
+- Consider both hard skills and culture fit in evaluations
+
+Always aim to provide comprehensive, practical assistance."""),
             ("user", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ])
@@ -58,7 +139,5 @@ Use modular_agent when a task requires planning and multiple steps.
         """
         Process the incoming message using LangChain.
         """
-
         result = self.agent_executor.invoke({"input": message_text})
-
         return result["output"]

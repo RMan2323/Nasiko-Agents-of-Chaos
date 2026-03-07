@@ -1,29 +1,52 @@
+"""
+Result aggregator for combining outputs from multiple modules.
+"""
+from typing import List, Dict, Any
+from langchain_openai import ChatOpenAI
+
+
 class ResultAggregator:
-    """
-    Combines results from multiple modules into a single response.
-    """
-
-    def combine(self, results):
-        """
-        Combine module results into a single string.
-
-        Args:
-            results (list[str]): List of results from executed tasks
-
-        Returns:
-            str: Final combined response
-        """
-
+    """Aggregates and summarizes results from multiple tasks."""
+    
+    def __init__(self):
+        self.llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    
+    def combine(self, results: List[Dict[str, Any]]) -> str:
+        """Combine multiple task results into a coherent response."""
+        
         if not results:
-            return "No results were produced."
+            return "No results to aggregate."
+        
+        # Format results for the LLM
+        formatted_results = []
+        for i, result in enumerate(results, 1):
+            task_desc = result.get("task", {}).get("description", "Unknown task")
+            status = result.get("status", "unknown")
+            module = result.get("module", "unknown")
+            result_data = result.get("result", {})
+            
+            formatted_results.append(
+                f"Task {i}: {task_desc}\n"
+                f"Module: {module}\n"
+                f"Status: {status}\n"
+                f"Result: {result_data}\n"
+            )
+        
+        results_text = "\n".join(formatted_results)
+        
+        prompt = f"""You are an HR assistant. Multiple tasks have been completed. 
+Synthesize the following results into a clear, professional, and helpful response for the user.
 
-        # Remove empty or None results
-        cleaned_results = [str(r).strip() for r in results if r]
+Results:
+{results_text}
 
-        if not cleaned_results:
-            return "Tasks executed but no useful results were returned."
+Provide a natural, conversational summary that:
+1. Highlights key information
+2. Mentions any actions taken
+3. Provides next steps if applicable
+4. Is concise but complete
 
-        # Join results with spacing for readability
-        combined_response = "\n\n".join(cleaned_results)
+Response:"""
 
-        return combined_response
+        response = self.llm.invoke(prompt)
+        return response.content

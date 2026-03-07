@@ -1,50 +1,47 @@
 """
-TaskRouter
-
-Responsible for mapping module names to module classes and
-returning the correct module instance.
+Task router for directing tasks to appropriate modules.
 """
-
-from src.modules import CalendarManager
-from src.modules import Recruiter
-from src.modules import Researcher
+from typing import Dict, Any, Optional, List
+from core.base_module import BaseModule
 
 
 class TaskRouter:
-    """
-    Routes tasks to the correct module.
-    """
-
+    """Routes tasks to appropriate modules."""
+    
     def __init__(self):
-        # Registry of module name -> module instance
-        self.module_registry = {
-            "calendar": CalendarManager(),
-            "recruiter": Recruiter(),
-            "research": Researcher(),
+        self.modules: Dict[str, BaseModule] = {}
+    
+    def register_module(self, module: BaseModule):
+        """Register a module with the router."""
+        self.modules[module.name] = module
+    
+    def route(self, task: Dict[str, Any]) -> Optional[BaseModule]:
+        """Find the best module to handle a task."""
+        task_type = task.get("type", "general")
+        
+        # Direct mapping for known task types
+        type_to_module = {
+            "schedule": "calendar_manager",
+            "recruit": "recruiter",
+            "research": "researcher",
+            "interview_prep": "interview_coach",
+            "culture_fit": "culture_analyzer"
         }
-
-    def route(self, task: dict):
-        """
-        Returns the correct module instance for a given task.
-
-        Args:
-            task (dict):
-            {
-                "module": str,
-                "task": str,
-                "parameters": dict
-            }
-
-        Returns:
-            module instance
-        """
-
-        module_name = task.get("module")
-
-        if module_name is None:
-            raise ValueError("Task missing 'module' field")
-
-        if module_name not in self.module_registry:
-            raise ValueError(f"Unknown module: {module_name}")
-
-        return self.module_registry[module_name]
+        
+        module_name = type_to_module.get(task_type)
+        if module_name and module_name in self.modules:
+            return self.modules[module_name]
+        
+        # Fallback: ask each module if it can handle the task
+        for module in self.modules.values():
+            if module.can_handle(task):
+                return module
+        
+        return None
+    
+    def get_all_capabilities(self) -> Dict[str, List[str]]:
+        """Get capabilities from all registered modules."""
+        return {
+            name: module.get_capabilities()
+            for name, module in self.modules.items()
+        }

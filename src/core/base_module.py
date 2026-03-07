@@ -1,55 +1,26 @@
 """
-Base module interface for all agent modules.
-
-Every functional module (Researcher, Recruiter, CalendarManager, etc.)
-must inherit from this class and implement the execute() method.
+Base module interface for the modular agent architecture.
 """
-
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 
 class BaseModule(ABC):
-    """
-    Abstract base class for all modules.
-    """
-
-    def __init__(self):
-        self.name = self.__class__.__name__
-
+    """Base class for all agent modules."""
+    
+    def __init__(self, name: str):
+        self.name = name
+    
     @abstractmethod
-    def execute(self, task: Dict[str, Any]) -> str:
-        """
-        Execute a task assigned to this module.
-
-        Args:
-            task (dict): Task dictionary with structure:
-
-                {
-                    "module": str,
-                    "task": str,
-                    "parameters": dict
-                }
-
-        Returns:
-            str: Result of the task execution
-        """
+    def can_handle(self, task: Dict[str, Any]) -> bool:
+        """Determine if this module can handle the given task."""
         pass
-
-    def validate_task(self, task: Dict[str, Any]) -> None:
-        """
-        Validate the task format before execution.
-        Raises an error if the format is incorrect.
-        """
-
-        if not isinstance(task, dict):
-            raise ValueError("Task must be a dictionary.")
-
-        if "task" not in task:
-            raise ValueError("Task dictionary must contain 'task' field.")
-
-        if "parameters" not in task:
-            raise ValueError("Task dictionary must contain 'parameters' field.")
-
-    def __repr__(self) -> str:
-        return f"<Module {self.name}>"
+    
+    @abstractmethod
+    def execute(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute the task and return results."""
+        pass
+    
+    def get_capabilities(self) -> List[str]:
+        """Return list of capabilities this module provides."""
+        return []

@@ -3,7 +3,7 @@
 from .planner import TaskPlanner
 from .executor import Executor
 from .router import TaskRouter
-# from .aggregator import ResultAggregator
+from .aggregator import ResultAggregator
 # from .base_module import BaseModule
 
 __all__ = [

@@ -3,6 +3,7 @@ Database utilities for storing candidate information.
 Supports both MongoDB (production) and file-based (development).
 """
 import os
+import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 

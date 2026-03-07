@@ -5,8 +5,8 @@
     "url": "http://localhost:8000/",
     "preferredTransport": "JSONRPC",
     "provider": {
-        "organization": "Nasiko AI Projects",
-        "url": "https://github.com/ashishsharma/nasiko"
+        "organization": "Agents of Chaos",
+        "url": "https://github.com/RMan2323/Nasiko-Agents-of-Chaos"
     },
     "iconUrl": "http://localhost:8000/icon.png",
     "version": "1.0.0",

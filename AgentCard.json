@@ -1,7 +1,7 @@
 {
     "protocolVersion": "0.2.9",
-    "name": "Agent-template",
-    "description": "A compliant A2A agent template.",
+    "name": "HR Agent",
+    "description": "Built for Buildathon 2026 by team Agents of Chaos.",
     "url": "http://localhost:8000/",
     "preferredTransport": "JSONRPC",
     "provider": {

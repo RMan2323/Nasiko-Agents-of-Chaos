@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir \
     "langchain>=0.2.0,<0.3.0" \
     "langchain-openai>=0.1.0,<0.2.0" \
     PyGithub>=2.1.1 \
-    click>=8.1.7
+    click>=8.1.7 \
+    pymongo>=4.6.0
 
 ENV PYTHONUNBUFFERED=1
 

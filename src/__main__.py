@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     @click.command()
     @click.option('--host', 'host', default='0.0.0.0')
-    @click.option('--port', 'port', default=8000)
+    @click.option('--port', 'port', default=5000)
     def main(host: str, port: int):
         uvicorn.run(app, host=host, port=port)
 

@@ -3,7 +3,7 @@ services:
     build: .
     container_name: agent-template
     environment:
-      - OPENAI_API_KEY=""
+      - OPENAI_API_KEY="${OPENAI_API_KEY}"
       - GITHUB_PERSONAL_ACCESS_TOKEN=""
     stdin_open: true
     ports:

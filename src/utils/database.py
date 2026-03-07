@@ -46,14 +46,9 @@ def get_database():
             logger.warning(f"⚠️ MongoDB connection failed: {e}")
     
     # Fallback to file-based database
-<<<<<<< HEAD
     logger.info("ℹ️ Using file-based database (development mode)")
     _db_instance = CandidateDatabase()
     return _db_instance
-=======
-    print("Using file-based database (development mode)")
-    return CandidateDatabase()
->>>>>>> 4998feb38e45d8d0564d5b9103ee4a3af115fa21
 
 
 class CandidateDatabase:

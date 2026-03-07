@@ -10,12 +10,6 @@ from langchain.agents import AgentExecutor, create_tool_calling_agent
 # Existing tools
 from tools import example_tool, modular_agent
 
-# Import modular architecture
-from src.core import TaskPlanner
-from src.core import TaskRouter
-from src.core import Executor
-from src.core import ResultAggregator
-
 class Agent:
     def __init__(self):
 

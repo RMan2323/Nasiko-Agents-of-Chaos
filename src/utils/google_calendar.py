@@ -41,7 +41,7 @@ class GoogleCalendarAPI:
             SCOPES = ['https://www.googleapis.com/auth/calendar']
             
             creds = None
-            token_path = '/tmp/token.json'
+            token_path = '/token.json'
             
             # Load existing token
             if os.path.exists(token_path):

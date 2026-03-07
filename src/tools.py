@@ -20,12 +20,13 @@ def set_modular_components(planner, executor, aggregator):
 
 
 @tool
-def schedule_interview(candidate_name: str, interview_type: str = "technical", duration: int = 60) -> str:
+def schedule_interview(candidate_name: str, date_time: str = "", interview_type: str = "technical", duration: int = 60) -> str:
     """
     Schedule an interview with a candidate.
     
     Args:
         candidate_name: Name of the candidate
+        date_time: Requested date and time in ISO format (e.g., '2026-03-15T15:00:00'). Leave empty for next available slot.
         interview_type: Type of interview (technical, behavioral, cultural, final)
         duration: Duration in minutes (default 60)
     """
@@ -33,7 +34,20 @@ def schedule_interview(candidate_name: str, interview_type: str = "technical", d
         return "Modular system not initialized"
     
     query = f"Schedule a {duration}-minute {interview_type} interview with {candidate_name}"
+    
+    # If the AI provided a date/time, append it to the task query
+    if date_time:
+        query += f" at {date_time}"
+        
     tasks = _planner.plan(query)
+    
+    # Safely inject date_time directly into the planned task parameters to ensure it isn't lost
+    for task in tasks:
+        if "params" not in task:
+            task["params"] = {}
+        if date_time:
+            task["params"]["date_time"] = date_time
+            
     results = _executor.execute(tasks)
     return _aggregator.combine(results)
 

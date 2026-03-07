@@ -1,0 +1,16 @@
+{
+  "jsonrpc": "2.0",
+  "id": "test-screen",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "role": "user",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "Can you schedule an interview with Bob on 15th March at 3 PM? It should be 30 minutes technical interview."
+        }
+      ]
+    }
+  }
+}

@@ -38,7 +38,7 @@ class GmailAPI:
             SCOPES = ['https://www.googleapis.com/auth/gmail.send']
             
             creds = None
-            token_path = '/tmp/gmail_token.json'
+            token_path = 'gmail_token.json'
             
             if os.path.exists(token_path):
                 creds = Credentials.from_authorized_user_file(token_path, SCOPES)

@@ -7,6 +7,7 @@ import logging
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_tool_calling_agent
+from langchain.memory import ConversationBufferMemory
 
 # Import tools
 from tools import (
@@ -40,6 +41,10 @@ from modules.culture_analyzer import CultureAnalyzer
 
 logger = logging.getLogger(__name__)
 
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True
+)
 
 class Agent:
     """HR Agent with modular architecture and LangChain integration."""
@@ -79,6 +84,7 @@ class Agent:
         # Create agent executor with optimized settings
         self.agent_executor = AgentExecutor(
             agent=agent,
+            memory=memory,
             tools=self.tools,
             verbose=True,
             max_iterations=10,
@@ -163,6 +169,9 @@ GUIDELINES:
 - Use hr_assistant for complex multi-step requests
 - Provide actionable insights and recommendations
 - Consider both hard skills and culture fit in evaluations
+- When scheduling interviews:
+- If only the candidate name is provided, first check the database for the email.
+- Do NOT ask the user for the email if the candidate exists in the database.
 
 Always aim to provide comprehensive, practical assistance."""),
             ("user", "{input}"),

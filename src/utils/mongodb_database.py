@@ -186,59 +186,59 @@ class MongoDBDatabase:
             logger.error(f"Failed to add candidate: {e}")
             return None
     
-    def get_candidate(self, email: str) -> Optional[Dict[str, Any]]:
+    def get_candidate(self, identifier: str) -> Optional[Dict[str, Any]]:
         """
-        Get candidate by name or email.
-        
+        Get candidate by email OR name.
+
         Args:
-            email: Candidate email address or name
-        
+            identifier: Candidate email or name
+
         Returns:
             Candidate document or None
         """
         if not self.is_connected():
             return None
-        
+
         try:
-            candidate = self.candidates.find_one({"email": email})
+            candidate = self.candidates.find_one({
+                "$or": [
+                    {"email": identifier},
+                    {"name": {"$regex": f"^{identifier}$", "$options": "i"}}
+                ]
+            })
+
             if candidate:
-                # Convert ObjectId to string
                 candidate["_id"] = str(candidate["_id"])
+
             return candidate
+
         except Exception as e:
             logger.error(f"Failed to get candidate: {e}")
             return None
     
-    def update_candidate(self, email: str, updates: Dict[str, Any]) -> bool:
+    def update_candidate(self, identifier: str, updates: Dict[str, Any]) -> bool:
         """
-        Update candidate information.
-        
-        Args:
-            email: Candidate email
-            updates: Dictionary of fields to update
-        
-        Returns:
-            True if successful, False otherwise
+        Update candidate by name or email.
         """
+
         if not self.is_connected():
             return False
-        
+
         try:
-            # Add updated_at timestamp
             updates["updated_at"] = datetime.utcnow()
-            
+
             result = self.candidates.update_one(
-                {"email": email},
+                {
+                    "$or": [
+                        {"email": identifier},
+                        {"name": {"$regex": f"^{identifier}$", "$options": "i"}}
+                    ]
+                },
                 {"$set": updates}
             )
-            
-            if result.modified_count > 0:
-                logger.info(f"✅ Candidate updated: {email}")
-                return True
-            else:
-                logger.warning(f"No changes made to candidate: {email}")
-                return False
-                
+
+            return result.modified_count > 0
+
         except Exception as e:
             logger.error(f"Failed to update candidate: {e}")
             return False
@@ -307,14 +307,22 @@ class MongoDBDatabase:
             logger.error(f"Failed to get candidates: {e}")
             return []
     
-    def delete_candidate(self, email: str) -> bool:
-        """Delete a candidate."""
+    def delete_candidate(self, identifier: str) -> bool:
+        """Delete candidate by name or email."""
+
         if not self.is_connected():
             return False
-        
+
         try:
-            result = self.candidates.delete_one({"email": email})
+            result = self.candidates.delete_one({
+                "$or": [
+                    {"email": identifier},
+                    {"name": {"$regex": f"^{identifier}$", "$options": "i"}}
+                ]
+            })
+
             return result.deleted_count > 0
+
         except Exception as e:
             logger.error(f"Failed to delete candidate: {e}")
             return False

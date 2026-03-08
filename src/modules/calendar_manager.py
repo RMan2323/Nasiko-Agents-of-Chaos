@@ -36,6 +36,12 @@ class CalendarManager(BaseModule):
         meeting_type = params.get("type", "technical")
         candidate_name = params.get("candidate_name", "Candidate")
         candidate_email = params.get("candidate_email", "")
+
+        # Auto-fetch email if missing
+        if not candidate_email and candidate_name:
+            candidate = self.db.get_candidate(candidate_name)
+            if candidate:
+                candidate_email = candidate.get("email", "")
         
         # NEW: Extract and parse the requested date_time if provided
         date_time_str = params.get("date_time", "")
@@ -95,6 +101,8 @@ class CalendarManager(BaseModule):
                 })
         
         # Send email invitation to candidate
+        print("Candidate email:", candidate_email)
+        print("Gmail available:", self.gmail_api.is_available())
         if candidate_email and self.gmail_api.is_available():
             self.gmail_api.send_interview_invitation(
                 candidate_email=candidate_email,

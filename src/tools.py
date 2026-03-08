@@ -90,20 +90,22 @@ def add_candidate_to_database(
 
 
 @tool
-def get_candidate_from_database(email: str) -> str:
+def get_candidate_from_database(identifier: str) -> str:
     """
-    Retrieve candidate information from MongoDB database by email.
-    
+    Retrieve candidate information from MongoDB database.
+
+    Use this tool when the user provides either:
+    - Candidate name (e.g. "Yashaswini")
+    - Candidate email (e.g. "john@email.com")
+
     Args:
-        email: Candidate's email address
-    
-    Returns:
-        Candidate information as formatted string
+        identifier: Candidate name OR email
     """
+
     try:
         db = _get_db()
-        candidate = db.get_candidate(email)
-        
+        candidate = db.get_candidate(identifier)
+
         if candidate:
             return f"""
 Candidate Found in Database:
@@ -120,7 +122,8 @@ Candidate Found in Database:
 - Culture Fit Score: {candidate.get('culture_fit_score', 'Not analyzed yet')}
 """
         else:
-            return f"❌ No candidate found with email: {email}"
+            return f"❌ No candidate found with identifier: {identifier}"
+
     except Exception as e:
         logger.error(f"Error retrieving candidate: {e}")
         return f"❌ Error retrieving candidate: {str(e)}"
@@ -288,7 +291,13 @@ def search_candidates_advanced(
 
 
 @tool
-def schedule_interview(candidate_name: str, date_time: str = "", interview_type: str = "technical", duration: int = 60, candidate_email: str = "") -> str:
+def schedule_interview(
+    candidate_name: str, 
+    date_time: str = "",
+    interview_type: str = "technical", 
+    duration: int = 60, 
+    candidate_email: str = ""
+) -> str:
     """
     Schedule an interview with a candidate.
     
@@ -304,7 +313,6 @@ def schedule_interview(candidate_name: str, date_time: str = "", interview_type:
     
     query = f"Schedule a {duration}-minute {interview_type} interview with {candidate_name}"
     
-    # If the AI provided a date/time, append it to the task query
     if date_time:
         query += f" at {date_time}"
         
@@ -313,12 +321,14 @@ def schedule_interview(candidate_name: str, date_time: str = "", interview_type:
     
     tasks = _planner.plan(query)
     
-    # Safely inject date_time directly into the planned task parameters to ensure it isn't lost
+    # Safely inject date_time AND candidate_email directly into the planned task
     for task in tasks:
         if "params" not in task:
             task["params"] = {}
         if date_time:
             task["params"]["date_time"] = date_time
+        if candidate_email:
+            task["params"]["candidate_email"] = candidate_email  # <--- THIS WAS MISSING!
             
     results = _executor.execute(tasks)
     return _aggregator.combine(results)

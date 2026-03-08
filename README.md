@@ -16,7 +16,41 @@ The agent can assist with:
 * Managing recruitment pipelines
 
 ---
+## Table of Contents
 
+- [HR AI Agent System](#hr-ai-agent-system)
+  - [Table of Contents](#table-of-contents)
+- [Setup](#setup)
+  - [Build Docker Image](#build-docker-image)
+  - [Run Container](#run-container)
+  - [Windows Request Example](#windows-request-example)
+  - [Example of curlPOST.json](#example-of-curlpostjson)
+  - [Configuration](#configuration)
+- [System Architecture](#system-architecture)
+    - [Responsibilities](#responsibilities)
+- [Execution Flow](#execution-flow)
+- [Project Structure](#project-structure)
+- [Core Components](#core-components)
+  - [Agent (`agent.py`)](#agent-agentpy)
+- [Core Agent System](#core-agent-system)
+  - [Planner (`planner.py`)](#planner-plannerpy)
+  - [Executor (`executor.py`)](#executor-executorpy)
+  - [Router (`router.py`)](#router-routerpy)
+  - [Aggregator (`aggregator.py`)](#aggregator-aggregatorpy)
+  - [Base Module (`base_module.py`)](#base-module-base_modulepy)
+- [Modules](#modules)
+  - [Calendar Manager](#calendar-manager)
+  - [Recruiter](#recruiter)
+  - [Researcher](#researcher)
+  - [Culture Analyzer](#culture-analyzer)
+  - [Interview Coach](#interview-coach)
+- [Utilities](#utilities)
+  - [Database (`database.py`)](#database-databasepy)
+  - [MongoDB Database (`mongodb_database.py`)](#mongodb-database-mongodb_databasepy)
+  - [Gmail (`gmail.py`)](#gmail-gmailpy)
+  - [Google Calendar (`google_calendar.py`)](#google-calendar-google_calendarpy)
+
+---
 # Setup
 
 ## Build Docker Image

@@ -42,6 +42,25 @@ curl.exe -X POST http://localhost:5000/ \
 ```
 
 ---
+## Example of curlPOST.json
+```
+{
+  "jsonrpc": "2.0",
+  "id": "test-screen",
+  "method": "message/send",
+  "params": {
+    "message": {
+      "role": "user",
+      "parts": [
+        {
+          "kind": "text",
+          "text": "Can you schedule an interview with Bob Smith on 15th March at 3 PM? It should be 30 minutes technical interview."
+        }
+      ]
+    }
+  }
+}
+```
 
 ## Configuration
 
@@ -382,30 +401,5 @@ Handles:
 * slot search
 * event retrieval
 * event cancellation
-
----
-
-
----
-
-# My new point / idea / suggestion
-
-Add a **Task Validator Layer** between Planner and Executor.
-
-```
-Planner
-   ↓
-Validator
-   ↓
-Executor
-```
-
-Validator checks:
-
-* invalid modules
-* missing parameters
-* malformed JSON
-
-This prevents **LLM-generated errors from breaking execution**.
 
 ---
